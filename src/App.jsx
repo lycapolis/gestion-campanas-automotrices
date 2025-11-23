@@ -17,11 +17,8 @@ const apiCall = async (action, params = {}) => {
 
 const apiPost = async (action, data) => {
   try {
-    const response = await fetch(`${API_URL}?action=${action}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
+    const queryParams = new URLSearchParams({ action, data: JSON.stringify(data) });
+    const response = await fetch(`${API_URL}?${queryParams}`);
     return await response.json();
   } catch (error) {
     console.error('Error API POST:', error);
