@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import Dashboard from './Dashboard.jsx';
 
 // TU API REAL
 const API_URL = 'https://script.google.com/macros/s/AKfycby8b41n5KV0FL-ufFhoPrh6YyiqbPUQqaG2G_O63QVhYH-VbVlG5Hyl4mgasXHl9iGj/exec';
@@ -32,6 +33,28 @@ export default function App() {
   const [marca, setMarca] = useState(null);
   const [solicitud, setSolicitud] = useState(null);
 
+  const handleLogin = (user) => {
+    setUsuario(user);
+    // Si es Marketing, ir directo al Dashboard
+    if (user.Rol === 'Marketing' || user.Rol === 'Admin') {
+      setView('dashboard');
+    } else {
+      setView('marcas');
+    }
+  };
+
+  const handleLogout = () => {
+    setUsuario(null);
+    setMarca(null);
+    setSolicitud(null);
+    setView('login');
+  };
+
+  // Si el usuario es Marketing/Admin, mostrar Dashboard
+  if (usuario && (usuario.Rol === 'Marketing' || usuario.Rol === 'Admin') && view !== 'login') {
+    return <Dashboard usuario={usuario} onLogout={handleLogout} />;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <header className="bg-black/40 backdrop-blur-md border-b border-white/10 px-6 py-4">
@@ -52,7 +75,7 @@ export default function App() {
                 <span className="text-xs text-slate-400">{usuario.Rol}</span>
               </div>
               <button 
-                onClick={() => { setUsuario(null); setMarca(null); setView('login'); }}
+                onClick={handleLogout}
                 className="text-sm px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition"
               >
                 Salir
@@ -63,7 +86,7 @@ export default function App() {
       </header>
 
       <main className="max-w-2xl mx-auto p-6 pb-20">
-        {view === 'login' && <Login onLogin={(u) => { setUsuario(u); setView('marcas'); }} />}
+        {view === 'login' && <Login onLogin={handleLogin} />}
         {view === 'marcas' && <Marcas usuario={usuario} onSelect={(m) => { setMarca(m); setView('form'); }} />}
         {view === 'form' && <Formulario usuario={usuario} marca={marca} onSubmit={(s) => { setSolicitud(s); setView('ok'); }} onBack={() => setView('marcas')} />}
         {view === 'ok' && <Confirmacion solicitud={solicitud} onNueva={() => { setMarca(null); setSolicitud(null); setView('marcas'); }} />}
@@ -139,7 +162,8 @@ function Login({ onLogin }) {
         
         <div className="mt-8 p-5 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-cyan-500/20 rounded-2xl">
           <p className="text-sm text-cyan-300 text-center">
-            <span className="font-bold">Prueba con:</span> juan.perez@cliente.com
+            <span className="font-bold">Prueba:</span> juan.perez@cliente.com (Vendedor)<br/>
+            <span className="font-bold">o</span> laura@agencia.com (Marketing)
           </p>
         </div>
       </div>
