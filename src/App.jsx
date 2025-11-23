@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
 // TU API REAL
-const API_URL = 'https://script.google.com/macros/s/AKfycbwObYa-qrgR6_Wf3h2HD7vqeEaYzCJ-o3RjG8KkVpaK_MqcXfBEdHNoZrOu7aGmVJ2I/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbyAd4ybGnq9glmozCmmMWDrZ9wRlu-YaILgwBTeFpbzDppoV93gPovQRKhdYsGYlKB7/exec';
 
 // Funciones API
 const apiCall = async (action, params = {}) => {
