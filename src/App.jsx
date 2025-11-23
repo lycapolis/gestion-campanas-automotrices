@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import Dashboard from './Dashboard.jsx';
+import FormularioDinamico from './FormularioDinamico.jsx';
 
 // TU API REAL
 const API_URL = 'https://script.google.com/macros/s/AKfycby8b41n5KV0FL-ufFhoPrh6YyiqbPUQqaG2G_O63QVhYH-VbVlG5Hyl4mgasXHl9iGj/exec';
@@ -88,7 +89,7 @@ export default function App() {
       <main className="max-w-2xl mx-auto p-6 pb-20">
         {view === 'login' && <Login onLogin={handleLogin} />}
         {view === 'marcas' && <Marcas usuario={usuario} onSelect={(m) => { setMarca(m); setView('form'); }} />}
-        {view === 'form' && <Formulario usuario={usuario} marca={marca} onSubmit={(s) => { setSolicitud(s); setView('ok'); }} onBack={() => setView('marcas')} />}
+        {view === 'form' && <FormularioDinamico usuario={usuario} marca={marca} onSubmit={(s) => { setSolicitud(s); setView('ok'); }} onBack={() => setView('marcas')} />}
         {view === 'ok' && <Confirmacion solicitud={solicitud} onNueva={() => { setMarca(null); setSolicitud(null); setView('marcas'); }} />}
       </main>
 
@@ -223,114 +224,6 @@ function Marcas({ usuario, onSelect }) {
             <div className="text-sm text-white/60">{m.Tipo_Materiales}</div>
           </button>
         ))}
-      </div>
-    </div>
-  );
-}
-
-function Formulario({ usuario, marca, onSubmit, onBack }) {
-  const [data, setData] = useState({});
-  const [submitting, setSubmitting] = useState(false);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setSubmitting(true);
-    
-    const solicitudData = {
-      ID_Usuario: usuario.ID_Usuario,
-      Nombre_Usuario: usuario.Nombre_Completo,
-      ID_Marca: marca.ID_Marca,
-      Nombre_Marca: marca.Nombre_Marca,
-      Texto_Anuncio: data.texto_anuncio || '',
-      Presupuesto: data.presupuesto || '',
-      Comentarios: data.comentarios || '',
-      Prioridad: 'Normal',
-      Tipo_Materiales: marca.Tipo_Materiales,
-      datosDinamicos: data,
-    };
-    
-    const result = await apiPost('crearSolicitud', solicitudData);
-    
-    if (result.success) {
-      onSubmit({
-        ...solicitudData,
-        Numero_Solicitud: result.numeroSolicitud,
-      });
-    } else {
-      alert('Error: ' + (result.error || 'Intenta de nuevo'));
-    }
-    setSubmitting(false);
-  };
-
-  return (
-    <div className="mt-6">
-      <div className="bg-white/5 backdrop-blur-2xl rounded-3xl p-8 border border-white/10 shadow-2xl">
-        <div className="mb-8">
-          <span className="inline-block bg-gradient-to-r from-blue-500 to-cyan-400 text-white px-5 py-2 rounded-full text-sm font-bold mb-4">
-            {marca.Nombre_Marca}
-          </span>
-          <h2 className="text-3xl font-bold text-white">Nueva Solicitud</h2>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-sm font-semibold text-slate-300 mb-3">
-              Texto del anuncio *
-            </label>
-            <textarea 
-              value={data.texto_anuncio || ''} 
-              onChange={e => setData({...data, texto_anuncio: e.target.value})} 
-              placeholder="Escribe el copy del anuncio..." 
-              rows={4} 
-              required
-              className="w-full px-5 py-4 bg-white/5 border-2 border-white/10 rounded-2xl text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none transition resize-none" 
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-slate-300 mb-3">
-              Presupuesto *
-            </label>
-            <input 
-              type="number" 
-              value={data.presupuesto || ''} 
-              onChange={e => setData({...data, presupuesto: e.target.value})} 
-              placeholder="Ej: 50000" 
-              required
-              className="w-full px-5 py-4 bg-white/5 border-2 border-white/10 rounded-2xl text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none transition" 
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-semibold text-slate-300 mb-3">
-              Comentarios
-            </label>
-            <textarea 
-              value={data.comentarios || ''} 
-              onChange={e => setData({...data, comentarios: e.target.value})} 
-              placeholder="Indicaciones especiales..." 
-              rows={3} 
-              className="w-full px-5 py-4 bg-white/5 border-2 border-white/10 rounded-2xl text-white placeholder-slate-500 focus:border-cyan-500 focus:outline-none transition resize-none" 
-            />
-          </div>
-
-          <div className="flex justify-between gap-4 pt-4">
-            <button 
-              type="button"
-              onClick={onBack}
-              className="px-8 py-4 bg-white/5 border-2 border-white/10 text-white rounded-2xl font-semibold hover:bg-white/10 transition"
-            >
-              ← Volver
-            </button>
-            <button 
-              type="submit"
-              disabled={submitting}
-              className="px-10 py-4 bg-gradient-to-r from-blue-600 via-cyan-500 to-teal-400 text-white rounded-2xl font-bold hover:shadow-xl transition disabled:opacity-50"
-            >
-              {submitting ? 'Enviando...' : 'Enviar solicitud ✓'}
-            </button>
-          </div>
-        </form>
       </div>
     </div>
   );
