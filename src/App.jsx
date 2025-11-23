@@ -36,8 +36,8 @@ export default function App() {
 
   const handleLogin = (user) => {
     setUsuario(user);
-    // Si es Marketing, ir directo al Dashboard
-    if (user.Rol === 'Marketing' || user.Rol === 'Admin') {
+    // Si tiene permiso para ver dashboard, ir directo al Dashboard
+    if (user.permisos && user.permisos.includes('ver_dashboard')) {
       setView('dashboard');
     } else {
       setView('marcas');
@@ -51,8 +51,8 @@ export default function App() {
     setView('login');
   };
 
-  // Si el usuario es Marketing/Admin, mostrar Dashboard
-  if (usuario && (usuario.Rol === 'Marketing' || usuario.Rol === 'Admin') && view !== 'login') {
+  // Si el usuario tiene permiso para ver dashboard, mostrar Dashboard
+  if (usuario && usuario.permisos && usuario.permisos.includes('ver_dashboard') && view !== 'login') {
     return <Dashboard usuario={usuario} onLogout={handleLogout} />;
   }
 
@@ -172,6 +172,52 @@ function Login({ onLogin }) {
   );
 }
 
+// Función para generar hash simple de un string
+const hashString = (str) => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convertir a 32bit integer
+  }
+  return Math.abs(hash);
+};
+
+// Función para generar colores consistentes basados en el nombre
+const getBrandColors = (brandName) => {
+  const hash = hashString(brandName);
+  
+  const colorPairs = [
+    ['blue-600', 'blue-800'],
+    ['purple-600', 'purple-800'],
+    ['pink-600', 'pink-800'],
+    ['red-600', 'red-800'],
+    ['orange-600', 'orange-800'],
+    ['amber-600', 'amber-800'],
+    ['yellow-600', 'yellow-800'],
+    ['lime-600', 'lime-800'],
+    ['green-600', 'green-800'],
+    ['emerald-600', 'emerald-800'],
+    ['teal-600', 'teal-800'],
+    ['cyan-600', 'cyan-800'],
+    ['sky-600', 'sky-800'],
+    ['indigo-600', 'indigo-800'],
+    ['violet-600', 'violet-800'],
+    ['fuchsia-600', 'fuchsia-800'],
+    ['rose-600', 'rose-800'],
+  ];
+  
+  const [startColor, endColor] = colorPairs[hash % colorPairs.length];
+  return `from-${startColor} to-${endColor}`;
+};
+
+// Función para asignar emoji de vehículo basado en el nombre
+const getBrandEmoji = (brandName) => {
+  const emojis = ['🚗', '🚙', '🚕', '🚐', '🏎️', '🚓', '🚑', '🚒', '🚌', '🚎'];
+  const hash = hashString(brandName);
+  return emojis[hash % emojis.length];
+};
+
 function Marcas({ usuario, onSelect }) {
   const [marcas, setMarcas] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -186,14 +232,6 @@ function Marcas({ usuario, onSelect }) {
     };
     cargar();
   }, [usuario]);
-
-  const brandStyles = {
-    'Ford': 'from-blue-600 to-blue-800',
-    'Chevrolet': 'from-amber-500 to-yellow-600',
-    'Nissan': 'from-red-600 to-rose-700',
-    'Toyota': 'from-red-500 to-pink-600',
-    'Volkswagen': 'from-blue-700 to-indigo-800',
-  };
 
   if (loading) {
     return (
@@ -218,8 +256,9 @@ function Marcas({ usuario, onSelect }) {
           <button 
             key={m.ID_Marca} 
             onClick={() => onSelect(m)} 
-            className={`bg-gradient-to-br ${brandStyles[m.Nombre_Marca] || 'from-slate-600 to-slate-700'} rounded-3xl p-8 hover:scale-105 transition-all duration-300 shadow-xl`}
+            className={`bg-gradient-to-br ${getBrandColors(m.Nombre_Marca)} rounded-3xl p-8 hover:scale-105 transition-all duration-300 shadow-xl`}
           >
+            <div className="text-5xl mb-3">{getBrandEmoji(m.Nombre_Marca)}</div>
             <div className="text-3xl font-bold text-white mb-2">{m.Nombre_Marca}</div>
             <div className="text-sm text-white/60">{m.Tipo_Materiales}</div>
           </button>
