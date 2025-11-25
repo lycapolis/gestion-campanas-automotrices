@@ -33,12 +33,25 @@ export default function App() {
   const [usuario, setUsuario] = useState(null);
   const [marca, setMarca] = useState(null);
   const [solicitud, setSolicitud] = useState(null);
+  const [vistaActual, setVistaActual] = useState('dashboard'); // 'dashboard' o 'solicitudes'
 
   const handleLogin = (user) => {
     setUsuario(user);
-    // Si tiene permiso para ver dashboard, ir directo al Dashboard
-    if (user.permisos && user.permisos.includes('ver_dashboard')) {
+    
+    // Verificar permisos del usuario
+    const tieneDashboard = user.permisos && user.permisos.includes('ver_dashboard');
+    const tieneSolicitudes = user.permisos && user.permisos.includes('crear_solicitudes');
+    
+    // Si tiene ambos permisos, ir a dashboard por defecto
+    if (tieneDashboard && tieneSolicitudes) {
+      setVistaActual('dashboard');
       setView('dashboard');
+    } else if (tieneDashboard) {
+      setVistaActual('dashboard');
+      setView('dashboard');
+    } else if (tieneSolicitudes) {
+      setVistaActual('solicitudes');
+      setView('marcas');
     } else {
       setView('marcas');
     }
@@ -49,11 +62,24 @@ export default function App() {
     setMarca(null);
     setSolicitud(null);
     setView('login');
+    setVistaActual('dashboard');
   };
 
-  // Si el usuario tiene permiso para ver dashboard, mostrar Dashboard
-  if (usuario && usuario.permisos && usuario.permisos.includes('ver_dashboard') && view !== 'login') {
-    return <Dashboard usuario={usuario} onLogout={handleLogout} />;
+  const cambiarVista = (nuevaVista) => {
+    setVistaActual(nuevaVista);
+    if (nuevaVista === 'dashboard') {
+      setView('dashboard');
+    } else {
+      setMarca(null);
+      setSolicitud(null);
+      setView('marcas');
+    }
+  };
+
+  // Si el usuario tiene permiso para ver dashboard y está en esa vista
+  if (usuario && usuario.permisos && usuario.permisos.includes('ver_dashboard') && vistaActual === 'dashboard' && view !== 'login') {
+    const puedeCrearSolicitudes = usuario.permisos.includes('crear_solicitudes');
+    return <Dashboard usuario={usuario} onLogout={handleLogout} onCambiarVista={puedeCrearSolicitudes ? cambiarVista : null} />;
   }
 
   return (
@@ -71,6 +97,17 @@ export default function App() {
           </div>
           {usuario && (
             <div className="flex items-center gap-4">
+              {/* Botón para cambiar vista - solo si tiene ambos permisos */}
+              {usuario.permisos && 
+               usuario.permisos.includes('ver_dashboard') && 
+               usuario.permisos.includes('crear_solicitudes') && (
+                <button 
+                  onClick={() => cambiarVista(vistaActual === 'dashboard' ? 'solicitudes' : 'dashboard')}
+                  className="text-sm px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white rounded-lg transition font-medium"
+                >
+                  {vistaActual === 'dashboard' ? '+ Nueva Solicitud' : '📊 Ver Dashboard'}
+                </button>
+              )}
               <div className="text-right hidden sm:block">
                 <span className="text-sm text-white block font-medium">{usuario.Nombre_Completo}</span>
                 <span className="text-xs text-slate-400">{usuario.Rol}</span>

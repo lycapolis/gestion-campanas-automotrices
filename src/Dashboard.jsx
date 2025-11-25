@@ -25,7 +25,7 @@ const apiPost = async (action, data) => {
   }
 };
 
-export default function Dashboard({ usuario, onLogout }) {
+export default function Dashboard({ usuario, onLogout, onCambiarVista }) {
   const [solicitudes, setSolicitudes] = useState([]);
   const [estados, setEstados] = useState([]);
   const [filtros, setFiltros] = useState({ marca: 'TODAS', estado: 'TODOS', busqueda: '' });
@@ -135,6 +135,15 @@ export default function Dashboard({ usuario, onLogout }) {
             </div>
           </div>
           <div className="flex items-center gap-4">
+            {/* Botón para crear nueva solicitud - solo si tiene el permiso */}
+            {onCambiarVista && (
+              <button 
+                onClick={() => onCambiarVista('solicitudes')}
+                className="px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white rounded-lg transition text-sm font-medium"
+              >
+                + Nueva Solicitud
+              </button>
+            )}
             <div className="text-right">
               <span className="text-sm text-white font-medium block">{usuario.Nombre_Completo}</span>
               <span className="text-xs text-cyan-400">{usuario.Rol}</span>
@@ -368,8 +377,16 @@ export default function Dashboard({ usuario, onLogout }) {
               </div>
 
               {/* Cambiar Estado */}
-              <div>
-                <span className="text-sm font-semibold text-white block mb-3">Cambiar Estado</span>
+              <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 border-2 border-purple-500/30 rounded-2xl p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-xl">
+                    ⚡
+                  </div>
+                  <div>
+                    <span className="text-lg font-bold text-white block">Cambiar Estado</span>
+                    <span className="text-sm text-slate-400">Selecciona el nuevo estado para esta solicitud</span>
+                  </div>
+                </div>
                 <div className="grid grid-cols-2 gap-3">
                   {estados.map(estado => (
                     <button
@@ -378,10 +395,11 @@ export default function Dashboard({ usuario, onLogout }) {
                       disabled={solicitudSeleccionada.Estado_Actual === estado.Nombre_Estado}
                       className={`p-3 rounded-xl font-medium transition ${
                         solicitudSeleccionada.Estado_Actual === estado.Nombre_Estado
-                          ? 'bg-white/5 text-slate-500 cursor-not-allowed'
-                          : 'bg-white/10 hover:bg-white/20 text-white'
+                          ? 'bg-white/5 text-slate-500 cursor-not-allowed border-2 border-white/10'
+                          : 'bg-gradient-to-br from-white/10 to-white/5 hover:from-white/20 hover:to-white/10 text-white border-2 border-white/20 hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/20'
                       }`}
                     >
+                      {solicitudSeleccionada.Estado_Actual === estado.Nombre_Estado && '✓ '}
                       {estado.Nombre_Estado}
                     </button>
                   ))}
