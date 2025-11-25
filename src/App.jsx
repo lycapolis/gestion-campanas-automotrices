@@ -42,8 +42,30 @@ export default function App() {
     const tieneDashboard = user.permisos && user.permisos.includes('ver_dashboard');
     const tieneSolicitudes = user.permisos && user.permisos.includes('crear_solicitudes');
     
-    // Si tiene ambos permisos, ir a dashboard por defecto
-    if (tieneDashboard && tieneSolicitudes) {
+    // Obtener roles del usuario
+    const rolesArray = user.rolesArray || (user.Rol ? user.Rol.split(',').map(r => r.trim()) : []);
+    const tieneAdmin = rolesArray.includes('Admin');
+    const primerRol = rolesArray[0];
+    
+    // PRIORIDAD 1: Si tiene Admin (en cualquier posición), siempre ir a Dashboard
+    if (tieneAdmin && tieneDashboard) {
+      setVistaActual('dashboard');
+      setView('dashboard');
+    }
+    // PRIORIDAD 2: Si NO es Admin, evaluar el primer rol de la lista
+    else if (primerRol === 'Vendedor' && tieneSolicitudes) {
+      // Primer rol es Vendedor → ir a Solicitudes
+      setVistaActual('solicitudes');
+      setView('marcas');
+    }
+    else if (primerRol === 'Marketing' && tieneDashboard) {
+      // Primer rol es Marketing → ir a Dashboard
+      setVistaActual('dashboard');
+      setView('dashboard');
+    }
+    // FALLBACK: Evaluar permisos generales
+    else if (tieneDashboard && tieneSolicitudes) {
+      // Tiene ambos permisos, ir a dashboard por defecto
       setVistaActual('dashboard');
       setView('dashboard');
     } else if (tieneDashboard) {
@@ -53,6 +75,7 @@ export default function App() {
       setVistaActual('solicitudes');
       setView('marcas');
     } else {
+      // Sin permisos específicos, ir a marcas
       setView('marcas');
     }
   };
